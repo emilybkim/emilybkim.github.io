@@ -1,0 +1,626 @@
+.clear {
+  clear: both;
+}
+
+html, body {
+  font-family: lato, sans-serif;
+  font-weight: 300;
+  margin: 0px auto;
+  overflow-x: hidden; 
+/*  min-width: 515px;*/
+/*  width: 100%;*/
+}
+
+
+/********************** 
+***** HEADER BAR ******
+**********************/
+
+.header-wrapper-two {
+  background-color: rgb(64, 64, 65);
+}
+
+  header {
+    background-color: rgb(64, 64, 65);
+    color: #FFFFFF;
+    max-width: 1130px;
+/*    min-width: 800px;*/
+    width: 100%;
+    height: 90px;
+    margin: 0 auto;
+/*    padding-left: 20px;*/
+  }
+
+    .sticky {
+      position: fixed;
+      z-index: 9999;
+      width: 100%
+    }
+
+    #brand {
+      display: inline-block;
+      float: left;
+      margin-right: 25px;
+    }
+
+      #brand img {
+        margin: 13px 13px 13px 30px;
+  /*      float: left;*/
+      }  
+      
+    nav {
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 400;
+      float: right;
+      line-height: 90px;
+    }
+
+      nav ul {
+/*        float: right;*/
+        display: inline;
+        list-style: none;
+        padding: 0px;
+      }
+
+      nav li {
+/*        position: relative;*/
+        float: left;
+        margin-right: 20px;
+      }
+
+      nav li:last-child {
+        margin-right: 30px;
+      }
+
+      nav a {
+        color: #FFFFFF;
+        text-decoration: none;
+      }
+      
+      nav a:hover {
+        color: #b2b2b2;
+      }
+
+      .active {
+        color: #BCD46C;
+      }
+
+.anchor {
+  display: block;
+  visibility: hidden;
+  height: 90px;
+  margin-top: -90px;
+}
+
+/************************ 
+***** INTRO BANNER ******
+************************/
+
+.intro-container {
+  background-color: rgb(139, 86, 162);
+}
+
+  .intro {
+    background-color: rgb(139, 86, 162);
+    color: #FFFFFF;
+    max-width: 1130px;
+/*    width: 100%;*/
+    margin: 0 auto;
+    padding: 0px 30px 0px 30px;
+  }
+
+    .intro h1 {
+      font-size: 40px;
+      line-height: 48px;
+      text-align: center;
+      margin: 0px;
+      padding-top: 40px;
+    }
+
+    .intro p {
+      margin-top: 10px;
+      font-size: 24px;
+      line-height: 28.8px;
+      text-align: center;
+    }
+
+    .intro-banner {
+/*      margin-left: 20px;*/
+/*      margin-right: 20px;*/
+      margin-top: 45px;
+/*      padding-right: 20px;*/
+/*      padding-left: 20px;*/
+      
+    }
+
+
+/*********************** 
+***** INFOGRAPHIC ******
+***********************/
+
+.infographic-container {
+  background: #c4e1f2;
+  background: -moz-linear-gradient(top,  #c4e1f2 0%, #ffffff 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#c4e1f2), color-stop(100%,#ffffff));
+  background: -webkit-linear-gradient(top,  #c4e1f2 0%,#ffffff 100%);
+  background: -o-linear-gradient(top,  #c4e1f2 0%,#ffffff 100%);
+  background: -ms-linear-gradient(top,  #c4e1f2 0%,#ffffff 100%);
+  background: linear-gradient(to bottom,  #c4e1f2 0%,#ffffff 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#c4e1f2', endColorstr='#ffffff',GradientType=0 );
+}
+
+  .infographic {
+    padding: 40px 30px 60px 30px;
+    text-align: center;
+    max-width: 1130px;
+    margin: 0 auto;
+  }
+
+    .infographic h1 {
+      margin: 0px;
+      font-family: oswald, sans-serif;
+      font-size: 46.33px;
+      font-weight: 400;
+      color: rgb(120, 150, 52);
+    }
+
+    .infographic p {
+      margin-top: 10px;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 24px;
+      line-height: 28.8px;
+      font-weight: 300;
+      color: rgb(64, 64, 65);
+      width: 75%;
+    }
+
+    .info-animation {
+  /*
+      margin-left: auto;
+      margin-right: auto;
+  */
+      margin-top: 20px;
+    }
+
+
+/********************* 
+***** SOLUTIONS ******
+*********************/
+
+.solutions-container {
+  background-color: rgb(38, 169, 224);
+}
+
+  .solutions {
+    color: #FFFFFF;
+    padding: 40px 30px 60px 30px;
+    max-width: 1130px;
+    margin: 0 auto;
+/*    width: 100%;*/
+  }
+
+    .solutions h1 {
+      margin: 0px;
+      font-size: 40px;
+      text-align: center;
+    }
+
+    .solutions p {
+/*      width: 850px;*/
+      margin-top: 10px;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 24px;
+      text-align: center;
+    }
+
+/*
+    #white-box {
+      background-color: #ffffff;
+      margin-right: 20px;
+      margin-left: 20px;
+    }
+*/
+
+    .solutions-animation {
+      border-radius: 8px;
+/*
+      margin-left: auto;
+      margin-right: auto;
+*/
+      margin-top: 20px;
+    }
+
+
+/****************
+***** TEAM ******
+****************/
+
+.team-container {
+  background-color: #FFFFFF;
+}
+
+.team {
+  padding: 40px 30px 60px 30px;
+  max-width: 1130px;
+  margin: 0 auto;
+}
+
+  .team h1 {
+    margin: 0px;
+    font-family: oswald, sans-serif;
+    font-size: 46.33px;
+    font-weight: 400;
+    text-align: center;
+    color: rgb(98, 78, 113);
+  }
+
+  .team p {
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 24px;
+    line-height: 28.8px;
+    text-align: center;
+    color: rgb(64, 64, 65);
+    width: 90%;
+  }
+
+  .team-web {
+/*
+    margin-left: auto;
+    margin-right: auto;
+*/
+    margin-top: 20px;
+  }
+
+
+/*******************
+***** CONTACT ******
+*******************/
+
+.contact-container {
+  background-color: rgb(139, 86, 162);
+}
+
+  .contact {
+    max-width: 1130px;
+    margin: 0 auto;
+    color: #FFFFFF;
+    padding: 40px 30px 0px 30px;
+  }
+
+    .contact h1 {
+      margin: 0;
+      font-size: 40px;
+      text-align: center;
+    }
+
+    .contact p {
+      margin-top: 10px;
+      font-size: 24px;
+      text-align: center;
+    }
+
+    .contact-info {
+      margin-top: 20px;
+    }
+
+
+/******************
+***** FOOTER ******
+******************/
+
+footer {
+  display: inline;
+  text-align: center;
+  color: rgb(64, 64, 65);
+  line-height: 50px;
+  height: 50px;
+}
+
+
+/*************************
+***** MEDIA QUERIES ******
+*************************/
+
+@media screen and (max-width: 1130px) {
+  
+  .intro h1 {
+
+  }
+  
+  .solutions-animation {
+    width: ;
+  }
+  
+/*
+  #brand {
+    margin-left: 20px;
+  }
+*/
+
+}
+
+@media screen and (max-width: 960px) {
+  
+  .intro h1 {
+    font-size: 33px;
+  }
+
+  .intro p {
+    font-size: 22px;
+  }
+
+  .infographic h1 {
+    font-size: 40px;
+  }
+
+  .infographic p {
+    font-size: 22px;
+    width: 85%;
+  }
+
+  .solutions h1 {
+    font-size: 33px;
+  }
+
+  .solutions p {
+    font-size: 22px;
+  }
+
+  .team h1 {
+    font-size: 40px;
+  }
+
+  .team p {
+    font-size: 22px;
+    width: 85%;
+  }
+
+  .contact h1 {
+    font-size: 33px;
+  }
+
+  .contact p {
+    font-size: 22px;
+  }
+}
+
+@media screen and (max-width: 800px) {
+  
+  header {
+    height: 76px;
+  }
+  
+  #brand img {
+    height: 50px; 
+  }
+  
+  .anchor {
+    height: 76px;
+    margin-top: -76px;
+  }
+  
+  nav {
+    line-height: 76px;
+  }
+  
+  .intro h1 {
+    font-size: 27px;
+    line-height: 27px;
+  }
+
+  .intro p {
+    font-size: 20px;
+  }
+
+  .infographic h1 {
+    font-size: 36px;
+    line-height: 36px;
+  }
+
+  .infographic p {
+    font-size: 20px;
+/*    width: 90%;*/
+  }
+
+  .solutions h1 {
+    font-size: 27px;
+    line-height: 27px;
+/*    width: 90%;*/
+/*
+    margin-left: auto;
+    margin-right: auto;
+*/
+  }
+
+  .solutions p {
+    font-size: 20px;
+/*    width: 90%;*/
+/*
+    margin-left: auto;
+    margin-right: auto;
+*/
+  }
+
+  .team h1 {
+    font-size: 36px;
+  }
+
+  .team p {
+    font-size: 20px;
+    width: 100%;
+  }
+
+  .contact h1 {
+    font-size: 27px;
+    line-height: 27px;
+  }
+
+  .contact p {
+    font-size: 20px;
+  }
+}
+
+
+@media screen and (max-width: 705px) {
+  header {
+    height: 66px;
+  }
+  
+  #brand img {
+    height: 40px; 
+  }
+  
+  .anchor {
+    height: 66px;
+    margin-top: -66px;
+  }
+  
+  nav {
+    line-height: 66px;
+  }
+  
+  .intro h1 {
+    font-size: 24px;
+    line-height: 28px;
+  }
+
+  .intro p {
+    font-size: 18px;
+    line-height: 22px;
+  }
+
+  .infographic h1 {
+    font-size: 30px;
+    line-height: 34px;
+  }
+
+  .infographic p {
+    font-size: 18px;
+    line-height: 22px;
+  }
+
+  .solutions h1 {
+    font-size: 24px;
+    line-height: 28px;
+  }
+
+  .solutions p {
+    font-size: 18px;
+    line-height: 22px;
+  }
+
+  .team h1 {
+    font-size: 30px;
+    line-height: 34px;
+  }
+
+  .team p {
+    font-size: 18px;
+    line-height: 22px;
+  }
+
+  .contact h1 {
+    font-size: 24px;
+    line-height: 28px;
+  }
+
+  .contact p {
+    font-size: 18px;
+    line-height: 22px;
+  }  
+  
+  footer {
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 660px) {
+  
+  header {
+/*    min-width: 515px;*/
+    clear: both;
+  }
+  
+  #brand  {
+    clear: both;
+    float: none;
+
+/*    width: 100%;*/
+  }
+  
+  #brand img {
+    position: absolute;
+    top: 0px;
+    left: 50%;
+    margin-left: -90px;
+  }
+  
+  .intro h1 {
+    padding-top: 20px;
+  }
+/*
+  #brand #logo {
+    display: none;
+  }
+  
+  #brand #logo-only {
+    display: block;
+  }
+*/
+  
+  nav {
+    display: none;
+    float: none;
+    clear: both;
+  }
+  
+  nav li {
+    float: none;
+    clear: both;
+  }
+  
+  .intro h1 {
+    padding-top: 20px;
+  }
+  
+  .intro-banner {
+    margin-top: 20px;
+  }
+  
+  .infographic {
+    padding-top: 30px;
+    padding-bottom: 15px;
+  }
+  
+  .info-animation {
+    margin-top: 5px;
+  }
+  
+  .solutions {
+    padding-top: 20px;
+    padding-bottom: 30px;
+  }
+  
+  .team {
+    padding-top: 30px;
+    padding-bottom: 10px;
+  }
+  
+  .team-web {
+    margin-top: 5px;
+  }
+  
+  .contact {
+    padding-top: 20px;
+/*    padding-bottom: 30px;*/
+  }
+  
+  footer {
+    font-size: 10px;
+  }
+}

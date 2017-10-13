@@ -1,0 +1,9 @@
+
+(function(compId){"use strict";var _=null,y=true,n=false,x9='break-word',x11='rgba(255,255,255,0.00)',x1='5.0.0',p='px',x7='46',g='image',l='normal',x8='oswald, sans-serif',x='text',w='width',x2='5.0.0.375',x3='horizontal',x4='rgba(0,0,0,0)',i='none';var g5='contact-graphic.png';var s6="hello@trilemetry.com",s10="650.479.6001";var im='images/',aud='media/',vid='media/',js='js/',fonts={'oswald, sans-serif':'<link href=\'http://fonts.googleapis.com/css?family=Oswald\' rel=\'stylesheet\' type=\'text/css\'>'},opts={'gAudioPreloadPreference':'auto','gVideoPreloadPreference':'auto'},resources=[],scripts=[],symbols={"stage":{v:x1,mv:x1,b:x2,stf:w,cg:x3,rI:n,cn:{dom:[{id:'contact-graphic',t:g,r:['30px','0px','942px','414px','auto','auto'],f:[x4,im+g5,'0px','0px']},{id:'email',t:x,r:['90px','107px','400px','69px','auto','auto'],text:s6,align:"center",n:[x8,[x7,p],"rgba(98,78,113,1.00)",l,i,"",x9,l]},{id:'phone',t:x,r:['90px','176px','400px','69px','auto','auto'],text:s10,align:"center",n:[x8,[x7,p],"rgba(98,78,113,1.00)",l,i,"",x9,l]}],style:{'${Stage}':{isStage:true,r:['null','null','1002px','414px','auto','auto'],zr:['0px','1002px','',''],overflow:'hidden',f:[x11]}}},tt:{d:0,a:y,data:[]}}};AdobeEdge.registerCompositionDefn(compId,symbols,fonts,scripts,resources,opts);})("contact-info");
+(function($,Edge,compId){var Composition=Edge.Composition,Symbol=Edge.Symbol;Edge.registerEventBinding(compId,function($){
+//Edge symbol: 'stage'
+(function(symbolName){Symbol.bindElementAction(compId,symbolName,"${email}","click",function(sym,e){});
+//Edge binding end
+})("stage");
+//Edge symbol end:'stage'
+})})(AdobeEdge.$,AdobeEdge,"contact-info");
