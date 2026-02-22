@@ -354,14 +354,14 @@ export function GamePage() {
     const correctChars = typed.filter((c, i) => i < text.length && c === text[i]).length
     const wpm = elapsed > 0 ? Math.round((correctChars / 5) / elapsed) : 0
 
-    const finishedAt = typed.length >= text.length ? new Date().toISOString() : null
+    const finishedAt = typed.length >= text.length && errors === 0 ? new Date().toISOString() : null
 
     streamDb.actions.upsertProgress({
       id: playerId, position, wpm, errors, charactersTyped: typed.length, finishedAt,
       sessionId: game?.sessionId ?? '',
     })
 
-    if (typed.length >= text.length) {
+    if (typed.length >= text.length && errors === 0) {
       // Stop SpeedBot when the race ends
       if (speedBotInterval.current) {
         clearInterval(speedBotInterval.current)
@@ -459,8 +459,6 @@ export function GamePage() {
         <LobbyScreen
           players={players ?? []}
           currentPlayerId={playerId}
-          playerName={playerName}
-          onNameChange={setPlayerName}
           onReady={handleReady}
         />
       )}
@@ -521,9 +519,8 @@ function JoinScreen({ name, onNameChange, onJoin }: {
   )
 }
 
-function LobbyScreen({ players, currentPlayerId, playerName, onNameChange, onReady }: {
-  players: Player[]; currentPlayerId: string | null; playerName: string
-  onNameChange: (name: string) => void; onReady: () => void
+function LobbyScreen({ players, currentPlayerId, onReady }: {
+  players: Player[]; currentPlayerId: string | null; onReady: () => void
 }) {
   const currentPlayer = players.find((p) => p.id === currentPlayerId)
   const isReady = currentPlayer?.isReady ?? false
@@ -534,13 +531,6 @@ function LobbyScreen({ players, currentPlayerId, playerName, onNameChange, onRea
         <Heading size="7">Lobby</Heading>
         <Text color="gray">Waiting for players...</Text>
       </Flex>
-
-      <Card>
-        <Flex direction="column" gap="3" p="3">
-          <Text size="2" weight="bold">Your name</Text>
-          <TextField.Root value={playerName} onChange={(e) => onNameChange(e.target.value)} />
-        </Flex>
-      </Card>
 
       <Flex direction="column" gap="3">
         <Text size="2" weight="bold" color="gray">Players ({players.length})</Text>
@@ -628,6 +618,7 @@ function RaceScreen({ text, source, typed, players, progressMap, currentPlayerId
       </Flex>
       <Separator size="4" />
       <div ref={typingRef} className="typing-area passage" tabIndex={0} onKeyDown={onKeyDown}
+        onBlur={() => typingRef.current?.focus()}
         style={{ padding: 16, borderRadius: 8, minHeight: 100, cursor: 'text' }}>
         {text.split('').map((char, i) => {
           let cn = 'char-pending'
