@@ -59,7 +59,7 @@ Browser Tab A                    Browser Tab B
 
 1. **Join** — Enter a name (or accept the random one) and click "Join Race"
 2. **Lobby** — See other players join in real-time. Click "I'm Ready" to start the countdown
-3. **Countdown** — 15-second countdown synced across all windows
+3. **Countdown** — 10-second countdown synced across all windows
 4. **Race** — Type the displayed passage. Progress bars and WPM update live for all players
 5. **Results** — When any player finishes, the game ends for everyone. Winner announced with final stats
 6. **Play Again** — Starts a fresh session

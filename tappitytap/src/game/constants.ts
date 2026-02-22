@@ -1,4 +1,4 @@
-export const COUNTDOWN_SECONDS = 15
+export const COUNTDOWN_SECONDS = 10
 export const GAME_ROOM_ID = 'tappitytap-room'
 
 const adjectives = [
