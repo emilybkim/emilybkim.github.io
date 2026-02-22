@@ -386,7 +386,6 @@ export function GamePage() {
 
   const handlePlayAgain = useCallback(() => {
     const newId = crypto.randomUUID()
-    const newSid = crypto.randomUUID()
     setPlayerId(newId)
     setTyped([]); typedRef.current = []
     setBotProgress(null)
@@ -400,18 +399,6 @@ export function GamePage() {
     }
     isMultiplayer.current = false
 
-    const passage = getRandomPassage()
-
-    const newGame: Game = {
-      id: GAME_ROOM_ID,
-      status: 'waiting',
-      textContent: passage.text,
-      textSource: passage.source,
-      countdownStartedAt: null,
-      startedAt: null,
-      finishedAt: null,
-      sessionId: newSid,
-    }
     const player: Player = {
       id: newId,
       name: playerName,
@@ -419,13 +406,36 @@ export function GamePage() {
       isReady: false,
       isSpectator: false,
       joinedAt: new Date().toISOString(),
-      sessionId: newSid,
+      sessionId: '',
     }
 
-    streamDb.actions.upsertGame(newGame)
-    streamDb.actions.upsertPlayer(player)
+    // If another player already started a new game, join their session
+    // (mirrors the check-then-join pattern in handleJoin)
+    if (game && (game.status === 'waiting' || game.status === 'countdown')) {
+      player.sessionId = game.sessionId
+      streamDb.actions.upsertPlayer(player)
+    } else {
+      // First player to click Play Again — create a new game
+      const newSid = crypto.randomUUID()
+      const passage = getRandomPassage()
+      player.sessionId = newSid
+
+      const newGame: Game = {
+        id: GAME_ROOM_ID,
+        status: 'waiting',
+        textContent: passage.text,
+        textSource: passage.source,
+        countdownStartedAt: null,
+        startedAt: null,
+        finishedAt: null,
+        sessionId: newSid,
+      }
+      streamDb.actions.upsertGame(newGame)
+      streamDb.actions.upsertPlayer(player)
+    }
+
     setPhase('lobby')
-  }, [playerName, playerAvatar])
+  }, [playerName, playerAvatar, game])
 
   // ─── Build progress map (synced + bot) ────────────────────────────
 
