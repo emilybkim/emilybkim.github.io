@@ -1,0 +1,80 @@
+/* Typing passage */
+.passage {
+  font-family: 'Space Mono', 'Courier New', monospace;
+  font-size: 1.25rem;
+  line-height: 2;
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+/* Character states */
+.char-correct {
+  color: var(--cyan-11);
+}
+.char-error {
+  color: white;
+  background-color: var(--red-9);
+  border-radius: 2px;
+}
+.char-current {
+  background-color: var(--cyan-5);
+  border-radius: 2px;
+  animation: blink 1s ease infinite;
+}
+.char-pending {
+  color: var(--gray-8);
+}
+
+/* Race progress bars */
+.race-bar {
+  height: 36px;
+  border-radius: 6px;
+  transition: width 150ms ease;
+}
+.race-bar-self {
+  background: linear-gradient(90deg, var(--cyan-9), var(--cyan-7));
+}
+.race-bar-other {
+  background: linear-gradient(90deg, var(--gray-7), var(--gray-5));
+}
+.race-bar-bot {
+  background: linear-gradient(90deg, var(--orange-9), var(--orange-7));
+}
+
+/* Typing area */
+.typing-area:focus {
+  outline: 2px solid var(--cyan-8);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* Animations */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.countdown-number {
+  animation: pulse 1s ease infinite;
+}
+.slide-in {
+  animation: slideIn 0.3s ease;
+}
+.trophy {
+  animation: bounce 2s ease infinite;
+}
