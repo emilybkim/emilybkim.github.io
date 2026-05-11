@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoRide — Share the ride. Save the planet.</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    /* ---------- Reset + base ---------- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #2D9D6E;
+      --green-dark: #20805A;
+      --green-light: #E6F4EC;
+      --bg: #F4FAF6;
+      --white: #FFFFFF;
+      --text: #1A2E26;
+      --muted: #6B7872;
+      --yellow: #FFC857;
+      --border: #E1ECE5;
+      --verified: #1DA1F2;
+      --shield: #4CAF50;
+      --danger: #B33A3A;
+      --gold: #F4B400;
+      --silver: #A8A8A8;
+      --bronze: #CD7F32;
+      --shadow: 0 4px 16px rgba(45, 157, 110, 0.10);
+      --shadow-lg: 0 16px 48px rgba(45, 157, 110, 0.22);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+      background:
+        radial-gradient(circle at 20% 10%, #D6EFE0 0, transparent 50%),
+        radial-gradient(circle at 80% 90%, #C9E8D6 0, transparent 50%),
+        linear-gradient(135deg, #E6F4EC 0%, #D4EBDC 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    /* ---------- Phone frame ---------- */
+    .phone {
+      width: 100%;
+      max-width: 440px;
+      height: 92vh;
+      max-height: 920px;
+      background: var(--white);
+      border-radius: 36px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status-bar {
+      background: var(--white);
+      padding: 14px 24px 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .status-bar .brand { color: var(--green); font-weight: 700; }
+
+    /* ---------- Screens ---------- */
+    .screen { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+    .screen.active { display: flex; }
+    .screen-body { flex: 1; overflow-y: auto; padding: 16px 24px; }
+
+    .header {
+      padding: 8px 20px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .header h1 { font-size: 19px; font-weight: 700; flex: 1; }
+    .header-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--green-light);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--green);
+      font-weight: 700;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+    .header-btn:hover { background: #D6EBDF; }
+
+    /* ---------- Buttons ---------- */
+    .btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--green);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      font-family: inherit;
+    }
+    .btn:hover { background: var(--green-dark); }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { background: #C5D0CB; cursor: not-allowed; }
+    .btn-secondary { background: var(--white); color: var(--green); border: 2px solid var(--green); }
+    .btn-secondary:hover { background: var(--green-light); }
+    .btn-yellow { background: var(--yellow); color: var(--text); }
+    .btn-yellow:hover { background: #F0B947; }
+    .btn-danger { background: var(--white); color: var(--danger); border: 2px solid var(--danger); }
+    .btn-danger:hover { background: #FBEAEA; }
+
+    .footer {
+      padding: 14px 24px 20px;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    /* ---------- Sign-up hero ---------- */
+    .signup-hero {
+      text-align: center;
+      padding: 26px 24px 22px;
+      background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+      color: white;
+      flex-shrink: 0;
+    }
+    .logo-circle {
+      width: 70px;
+      height: 70px;
+      background: var(--white);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      font-size: 34px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    .signup-hero h2 { font-size: 28px; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.5px; }
+    .signup-hero p { opacity: 0.95; font-size: 13px; }
+
+    /* ---------- Forms ---------- */
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 13px 14px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--white);
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .form-group select {
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%232D9D6E' d='M6 8L0 0h12z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+    .form-group input:focus,
+    .form-group select:focus { outline: none; border-color: var(--green); }
+
+    /* ---------- Map ---------- */
+    #map, #confirm-map, #gps-map {
+      width: 100%;
+      height: 220px;
+      border-radius: 16px;
+      overflow: hidden;
+      margin: 10px 0;
+      border: 2px solid var(--border);
+    }
+    .leaflet-container { background: #DCEDE2; }
+
+    /* ---------- Rider card ---------- */
+    .rider-card {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .rider-card:hover {
+      border-color: var(--green);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+    .rider-card.unverified { opacity: 0.72; background: #FAFAFA; }
+    .rider-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--green-light);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .rider-avatar img { width: 100%; height: 100%; display: block; }
+    .rider-info { flex: 1; min-width: 0; }
+    .rider-name {
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-bottom: 2px;
+    }
+    .rider-meta { font-size: 12px; color: var(--muted); }
+    .rider-route {
+      font-size: 11px;
+      color: var(--green);
+      font-weight: 700;
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .rider-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: var(--green-light);
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      font-family: inherit;
+      line-height: 1;
+    }
+    .icon-btn:hover { background: #D6EBDF; color: var(--green); }
+    .icon-btn.fav.active { color: var(--yellow); background: rgba(255,200,87,0.18); }
+    .icon-btn.fav.active:hover { background: rgba(255,200,87,0.28); }
+
+    /* ---------- Badges ---------- */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .badge-verified { background: rgba(29,161,242,0.12); color: var(--verified); }
+    .badge-bg-check { background: rgba(76,175,80,0.15); color: #2E7D32; }
+    .badge-stars { background: rgba(255,200,87,0.22); color: #8B6914; }
+    .badge-unverified { background: rgba(179,58,58,0.12); color: var(--danger); }
+    .badge-fav { background: rgba(255,200,87,0.22); color: #8B6914; }
+
+    /* ---------- Match confirm ---------- */
+    .match-banner {
+      background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+      color: white;
+      padding: 18px;
+      border-radius: 20px;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .match-photos { display: flex; justify-content: center; margin: 0 0 12px 0; }
+    .match-photo {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 4px solid white;
+      overflow: hidden;
+      background: var(--green-light);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    }
+    .match-photo + .match-photo { margin-left: -18px; }
+    .match-photo img { width: 100%; height: 100%; display: block; }
+    .match-banner h3 { font-size: 17px; font-weight: 700; }
+    .match-banner p { font-size: 13px; opacity: 0.95; margin-top: 4px; }
+
+    /* ---------- Stat cards ---------- */
+    .stat-row { display: flex; gap: 10px; margin: 10px 0; }
+    .stat-card {
+      flex: 1;
+      background: var(--green-light);
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .stat-card-big {
+      background: linear-gradient(135deg, #2D9D6E 0%, #4CAF50 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 20px;
+      text-align: center;
+      margin: 10px 0;
+      box-shadow: var(--shadow);
+    }
+    .stat-number { font-size: 28px; font-weight: 800; line-height: 1.1; }
+    .stat-card-big .stat-number { font-size: 44px; }
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+    .stat-card-big .stat-label { color: rgba(255,255,255,0.95); }
+    .stat-card-big .stat-sub { font-size: 13px; opacity: 0.95; margin-bottom: 6px; }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 14px 0 6px;
+    }
+
+    /* ---------- Toast ---------- */
+    .toast {
+      position: absolute;
+      bottom: 100px;
+      left: 18px;
+      right: 18px;
+      background: var(--text);
+      color: white;
+      padding: 14px 16px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-lg);
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(20px);
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 1000;
+      text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ---------- Info banner ---------- */
+    .info-banner {
+      background: var(--green-light);
+      border-left: 4px solid var(--green);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .info-banner strong { color: var(--green-dark); }
+
+    /* ---------- Drawer ---------- */
+    .drawer-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.42);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+      z-index: 900;
+    }
+    .drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+    .drawer {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 80%;
+      max-width: 300px;
+      background: white;
+      transform: translateX(-105%);
+      transition: transform 0.25s ease-out;
+      z-index: 901;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.2);
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-header {
+      background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+      color: white;
+      padding: 24px 20px 18px;
+    }
+    .drawer-header .logo-mini {
+      font-size: 28px;
+      margin-bottom: 4px;
+    }
+    .drawer-header h3 { font-size: 17px; font-weight: 700; }
+    .drawer-header p { font-size: 12px; opacity: 0.9; margin-top: 1px; }
+    .drawer-menu { padding: 8px 0; flex: 1; overflow-y: auto; }
+    .drawer-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 20px;
+      border: none;
+      background: none;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      color: var(--text);
+      font-family: inherit;
+    }
+    .drawer-item:hover { background: var(--green-light); }
+    .drawer-item.active { color: var(--green); background: var(--green-light); }
+    .drawer-item-icon { font-size: 19px; width: 24px; text-align: center; }
+    .drawer-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* ---------- Modal sheet ---------- */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 950;
+    }
+    .modal-overlay.open { display: flex; animation: fadeIn 0.2s; }
+    .modal-sheet {
+      background: white;
+      padding: 20px;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      width: 100%;
+      animation: slideUp 0.25s ease-out;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .sheet-title {
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .sheet-title .rider-avatar { width: 36px; height: 36px; }
+
+    /* ---------- Settings ---------- */
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    .switch input { display: none; }
+    .switch .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: #C5D0CB;
+      border-radius: 24px;
+      transition: 0.2s;
+    }
+    .switch .slider:before {
+      content: '';
+      position: absolute;
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+    .switch input:checked + .slider { background: var(--green); }
+    .switch input:checked + .slider:before { transform: translateX(20px); }
+    .blocked-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 6px;
+    }
+    .blocked-row .rider-avatar { width: 32px; height: 32px; }
+    .btn-link {
+      background: none;
+      border: none;
+      color: var(--danger);
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* ---------- GPS screen ---------- */
+    #gps-progress {
+      font-size: 44px;
+      font-weight: 800;
+      color: var(--green);
+      transition: color 0.3s;
+    }
+    #gps-status {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      transition: color 0.3s, font-size 0.3s;
+      margin-top: 4px;
+    }
+    #gps-status.verified {
+      color: var(--green);
+      font-size: 18px;
+    }
+    .gps-pulse {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: var(--verified);
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.4); }
+    }
+
+    /* ---------- Leaderboard ---------- */
+    .your-rank-banner {
+      background: linear-gradient(135deg, var(--green) 0%, #4CAF50 100%);
+      color: white;
+      padding: 14px;
+      border-radius: 14px;
+      text-align: center;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .your-rank-banner strong { font-size: 18px; }
+
+    .podium {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      margin: 12px 0 16px;
+    }
+    .podium-card {
+      flex: 1;
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 6px;
+      text-align: center;
+      position: relative;
+    }
+    .podium-card.me { background: var(--green-light); border-color: var(--green); }
+    .podium-1 { order: 2; padding-top: 18px; padding-bottom: 18px; transform: translateY(-6px); }
+    .podium-2 { order: 1; }
+    .podium-3 { order: 3; }
+    .podium-medal { font-size: 24px; }
+    .podium-1 .podium-medal { font-size: 32px; }
+    .podium-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: var(--green-light);
+      margin: 6px auto 4px;
+      border: 2px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .podium-avatar img { width: 100%; height: 100%; display: block; }
+    .podium-name {
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 1px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .podium-meta {
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .podium-score {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--green);
+    }
+    .lb-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 6px;
+    }
+    .lb-row.me { background: var(--green-light); border-color: var(--green); }
+    .lb-rank {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      min-width: 28px;
+      text-align: center;
+    }
+    .lb-row.me .lb-rank { color: var(--green); }
+    .lb-row .rider-avatar { width: 36px; height: 36px; }
+    .lb-info { flex: 1; min-width: 0; }
+    .lb-name {
+      font-size: 13px;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .lb-city { font-size: 11px; color: var(--muted); }
+    .lb-score { font-size: 14px; font-weight: 700; color: var(--green); }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 480px) {
+      body { padding: 0; }
+      .phone {
+        max-width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+      }
+    }
+
+    /* ---------- Subtle animation ---------- */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .screen.active > .screen-body > * { animation: fadeUp 0.3s ease-out both; }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span class="brand">🌿 CoRide</span>
+      <span>●●●●</span>
+    </div>
+
+    <!-- ================= DRAWER (slide-out menu) ================= -->
+    <div id="drawer-backdrop" class="drawer-backdrop" onclick="closeDrawer()"></div>
+    <aside id="drawer" class="drawer">
+      <div class="drawer-header">
+        <div class="logo-mini">🌿</div>
+        <h3 id="drawer-user-name">CoRide</h3>
+        <p id="drawer-user-meta">Share the ride.</p>
+      </div>
+      <nav class="drawer-menu">
+        <button class="drawer-item" data-target="screen-map" onclick="navTo('screen-map')">
+          <span class="drawer-item-icon">🗺️</span>Find a Ride
+        </button>
+        <button class="drawer-item" data-target="screen-leaderboard" onclick="navTo('screen-leaderboard')">
+          <span class="drawer-item-icon">🏆</span>Leaderboard
+        </button>
+        <button class="drawer-item" data-target="screen-favorites" onclick="navTo('screen-favorites')">
+          <span class="drawer-item-icon">⭐</span>Favorites
+        </button>
+        <button class="drawer-item" data-target="screen-profile" onclick="navTo('screen-profile')">
+          <span class="drawer-item-icon">🌿</span>My Impact
+        </button>
+        <button class="drawer-item" data-target="screen-settings" onclick="navTo('screen-settings')">
+          <span class="drawer-item-icon">⚙️</span>Settings
+        </button>
+      </nav>
+      <div class="drawer-footer">CoRide v1.0 · Science Project</div>
+    </aside>
+
+    <!-- ================= SIGN-UP ================= -->
+    <section id="screen-signup" class="screen active">
+      <div class="signup-hero">
+        <div class="logo-circle">🌿</div>
+        <h2>CoRide</h2>
+        <p>Share the ride. Save the planet.</p>
+      </div>
+      <div class="screen-body">
+        <div class="info-banner">
+          Welcome! Set up your account to carpool with verified riders going your way.
+        </div>
+        <div class="form-group">
+          <label>Your name</label>
+          <input id="signup-name" type="text" value="Alex Rivera" />
+        </div>
+        <div class="form-group">
+          <label>Age</label>
+          <input id="signup-age" type="number" value="13" />
+        </div>
+        <div class="form-group">
+          <label>I'm commuting to</label>
+          <select id="signup-purpose">
+            <option value="school">School</option>
+            <option value="work">Work</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Emergency contact (for trip-sharing)</label>
+          <input id="signup-contact" type="text" value="Mom — 555-0123" />
+        </div>
+      </div>
+      <div class="footer">
+        <button class="btn" onclick="goToMap()">Create account →</button>
+      </div>
+    </section>
+
+    <!-- ================= ROUTE PICK ================= -->
+    <section id="screen-map" class="screen">
+      <div class="header">
+        <button class="header-btn" onclick="openDrawer()">☰</button>
+        <h1>Find a ride</h1>
+      </div>
+      <div class="screen-body">
+        <div class="form-group">
+          <label>Starting point</label>
+          <select id="map-start" onchange="updateMapPreview()">
+            <option value="">Pick a starting point...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Destination</label>
+          <select id="map-end" onchange="updateMapPreview()">
+            <option value="">Pick a destination...</option>
+          </select>
+        </div>
+        <div id="map"></div>
+        <div id="map-distance" style="font-size:12px; color: var(--muted); text-align:center; margin-top: 4px;"></div>
+      </div>
+      <div class="footer">
+        <button class="btn" id="find-matches-btn" disabled onclick="findMatches()">Find matches</button>
+      </div>
+    </section>
+
+    <!-- ================= MATCHES ================= -->
+    <section id="screen-matches" class="screen">
+      <div class="header">
+        <button class="header-btn" onclick="goTo('screen-map')">←</button>
+        <h1>Carpool matches</h1>
+        <button class="header-btn" onclick="openDrawer()">☰</button>
+      </div>
+      <div class="screen-body">
+        <div class="info-banner" id="matches-summary"></div>
+        <div class="section-title">Available riders</div>
+        <div id="matches-list"></div>
+      </div>
+    </section>
+
+    <!-- ================= MATCH CONFIRM ================= -->
+    <section id="screen-confirm" class="screen">
+      <div class="header">
+        <button class="header-btn" onclick="goTo('screen-matches')">←</button>
+        <h1>You're matched!</h1>
+        <button class="header-btn" onclick="openDrawer()">☰</button>
+      </div>
+      <div class="screen-body">
+        <div class="match-banner">
+          <div class="match-photos" id="confirm-photos"></div>
+          <h3 id="confirm-names"></h3>
+          <p id="confirm-route"></p>
+        </div>
+        <div id="confirm-map"></div>
+        <div class="stat-card-big">
+          <div class="stat-sub">Your CO₂ savings on this trip</div>
+          <div class="stat-number"><span id="co2-saved">0</span> g</div>
+          <div class="stat-label">carbon dioxide kept out of the air</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-number" id="solo-co2">0</div>
+            <div class="stat-label">grams driving alone</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="trip-miles">0</div>
+            <div class="stat-label">miles this trip</div>
+          </div>
+        </div>
+        <button class="btn btn-yellow" onclick="shareTrip()" style="margin-top: 10px;">📲 Share trip with my contact</button>
+        <p style="font-size: 11px; color: var(--muted); text-align: center; margin-top: 6px; line-height: 1.4;">
+          Sends route, partner's name, and ETA to your emergency contact for safety.
+        </p>
+        <div style="display:flex; gap: 8px; margin-top: 10px;">
+          <button class="btn btn-secondary" style="flex: 1;" onclick="openRiderActions(state.currentMatch && state.currentMatch.id, event)">🚩 Report / ⛔ Block</button>
+          <button class="btn btn-secondary" style="flex: 2;" onclick="finishTripWithGps()">Complete trip ✓</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= GPS VERIFICATION ================= -->
+    <section id="screen-gps" class="screen">
+      <div class="header">
+        <h1>Verifying trip</h1>
+      </div>
+      <div class="screen-body" style="text-align: center;">
+        <div class="info-banner">
+          <span class="gps-pulse"></span>
+          <strong>GPS tracking</strong> confirms your trip actually happened. This stops people from faking carpools to climb the leaderboard.
+        </div>
+        <div id="gps-map"></div>
+        <div style="margin: 16px 0 6px;">
+          <span id="gps-progress">0%</span>
+        </div>
+        <div id="gps-status">Tracking your route...</div>
+        <div id="gps-message" style="font-size: 13px; color: var(--muted); margin-top: 8px;"></div>
+      </div>
+    </section>
+
+    <!-- ================= PROFILE / IMPACT ================= -->
+    <section id="screen-profile" class="screen">
+      <div class="header">
+        <button class="header-btn" onclick="openDrawer()">☰</button>
+        <h1>Your impact</h1>
+      </div>
+      <div class="screen-body">
+        <div class="signup-hero" style="border-radius: 20px; padding: 22px; margin-bottom: 10px;">
+          <div class="logo-circle" id="profile-avatar"></div>
+          <h2 id="profile-name" style="font-size: 22px;"></h2>
+          <p id="profile-purpose"></p>
+        </div>
+        <div class="stat-card-big">
+          <div class="stat-sub">Total CO₂ saved this week</div>
+          <div class="stat-number"><span id="total-co2">0</span> g</div>
+          <div class="stat-label" id="total-equivalent"></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-number" id="total-trips">0</div>
+            <div class="stat-label">Trips taken</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="total-miles">0</div>
+            <div class="stat-label">Miles shared</div>
+          </div>
+        </div>
+        <div class="info-banner" style="margin-top: 12px;">
+          <strong>Did you know?</strong> The average passenger car emits 404 g of CO₂ per mile (EPA). Sharing a ride with one other person cuts that in half — and it adds up fast.
+        </div>
+      </div>
+      <div class="footer">
+        <button class="btn" onclick="navTo('screen-map')">+ Start a new trip</button>
+      </div>
+    </section>
+
+    <!-- ================= LEADERBOARD ================= -->
+    <section id="screen-leaderboard" class="screen">
+      <div class="header">
+        <button class="header-btn" onclick="openDrawer()">☰</button>
+        <h1>🏆 Leaderboard</h1>
+      </div>
+      <div class="screen-body">
+        <div class="your-rank-banner" id="lb-your-rank"></div>
+        <div class="info-banner">
+          <strong>How is this fair?</strong> Every trip is verified by GPS, so nobody can fake rides to climb the ranks.
+        </div>
+        <div class="section-title">Top 3 Worldwide</div>
+        <div class="podium" id="lb-podium"></div>
+        <div class="section-title">Everyone else</div>
+        <div id="lb-list"></div>
+      </div>
+    </section>
+
+    <!-- ================= FAVORITES ================= -->
+    <section id="screen-favorites" class="screen">
+      <div class="header">
+        <button class="header-btn" onclick="openDrawer()">☰</button>
+        <h1>⭐ Favorites</h1>
+      </div>
+      <div class="screen-body">
+        <div class="info-banner">
+          Your saved riders — people you carpool with often. Star riders from the matches list to add them here.
+        </div>
+        <div id="favorites-list"></div>
+      </div>
+    </section>
+
+    <!-- ================= SETTINGS ================= -->
+    <section id="screen-settings" class="screen">
+      <div class="header">
+        <button class="header-btn" onclick="openDrawer()">☰</button>
+        <h1>⚙️ Settings</h1>
+      </div>
+      <div class="screen-body">
+        <div class="section-title">Profile</div>
+        <div class="form-group">
+          <label>Name</label>
+          <input id="settings-name" type="text" />
+        </div>
+        <div class="form-group">
+          <label>Age</label>
+          <input id="settings-age" type="number" />
+        </div>
+        <div class="form-group">
+          <label>Emergency contact</label>
+          <input id="settings-contact" type="text" />
+        </div>
+        <button class="btn" onclick="saveSettings()">Save changes</button>
+
+        <div class="section-title">Notifications</div>
+        <div class="settings-row">
+          <span>Match found alerts</span>
+          <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <span>Trip reminders</span>
+          <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <span>Leaderboard updates</span>
+          <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+        </div>
+
+        <div class="section-title">Privacy &amp; Safety</div>
+        <div class="settings-row">
+          <span>GPS trip verification</span>
+          <label class="switch"><input type="checkbox" checked disabled><span class="slider"></span></label>
+        </div>
+        <p style="font-size:11px; color: var(--muted); margin: -4px 0 10px; padding: 0 4px;">
+          Required to keep the leaderboard fair. Can't be turned off.
+        </p>
+        <div class="section-title">Blocked riders</div>
+        <div id="blocked-list"></div>
+
+        <div class="section-title">Reset</div>
+        <button class="btn btn-secondary" onclick="resetStats()">Reset all trip stats</button>
+        <p style="font-size: 11px; color: var(--muted); margin-top: 4px; text-align: center;">Useful before re-demoing.</p>
+
+        <div class="section-title">About</div>
+        <div class="info-banner" style="margin-bottom: 24px;">
+          <strong>CoRide v1.0</strong> · Built for a middle-school science project. CO₂ math uses the EPA's 404 g/mile figure for an average passenger car. Map by OpenStreetMap.
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ACTION SHEET (Block/Report) ================= -->
+    <div id="rider-actions-overlay" class="modal-overlay" onclick="closeRiderActions()">
+      <div class="modal-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-title" id="rider-actions-title"></div>
+        <button class="btn btn-danger" style="margin-bottom: 8px;" onclick="reportCurrentRider()">🚩 Report this rider</button>
+        <p style="font-size:11px; color: var(--muted); text-align: center; margin: -4px 0 10px; padding: 0 8px; line-height: 1.4;">
+          Sends a report to the safety team for review. They check reports within 24 hours.
+        </p>
+        <button class="btn btn-danger" style="margin-bottom: 8px;" onclick="blockCurrentRider()">⛔ Block this rider</button>
+        <p style="font-size:11px; color: var(--muted); text-align: center; margin: -4px 0 12px; padding: 0 8px; line-height: 1.4;">
+          You won't see this rider in future matches. You can unblock anyone in Settings.
+        </p>
+        <button class="btn btn-secondary" onclick="closeRiderActions()">Cancel</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    /* =========================================================
+       CoRide — single-file carpool app demo (v1.0)
+       Built for a middle-school science class project.
+       Map:    Leaflet + OpenStreetMap (free, no API key)
+       Avatars: DiceBear (free public CDN)
+       Carbon math: EPA 404 g CO2 / mile (typical passenger car)
+       Features: Sign-up, route picker, matching, safety badges,
+                 GPS-verified trip completion, global leaderboard,
+                 favorites, block/report, settings.
+       ========================================================= */
+
+    /* ---------- Locations ---------- */
+    const SPOTS = {
+      'home-noe':    { name: 'Home: Noe Valley',         lat: 37.7507, lng: -122.4337, type: 'start' },
+      'home-castro': { name: 'Home: Castro',             lat: 37.7609, lng: -122.4350, type: 'start' },
+      'home-sunset': { name: 'Home: Sunset District',    lat: 37.7536, lng: -122.4849, type: 'start' },
+      'home-marina': { name: 'Home: Marina District',    lat: 37.8024, lng: -122.4366, type: 'start' },
+      'mission-hs':  { name: 'Mission High School',      lat: 37.7649, lng: -122.4239, type: 'end' },
+      'lowell-hs':   { name: 'Lowell High School',       lat: 37.7300, lng: -122.4854, type: 'end' },
+      'salesforce':  { name: 'Salesforce Tower (work)',  lat: 37.7898, lng: -122.3942, type: 'end' },
+      'ucsf':        { name: 'UCSF Mission Bay (work)',  lat: 37.7689, lng: -122.3920, type: 'end' },
+      'ferry':       { name: 'Ferry Building (work)',    lat: 37.7956, lng: -122.3933, type: 'end' },
+      'sfsu':        { name: 'SF State University',      lat: 37.7241, lng: -122.4799, type: 'end' },
+    };
+
+    /* ---------- Riders ---------- */
+    const RIDERS = [
+      { id:'maya',   name:'Maya Chen',       age:14, dest:'Mission High School', endKey:'mission-hs', startKey:'home-noe',    time:'7:45 AM', verified:true,  bgcheck:true,  rating:4.9, trips:23,  seed:'Maya'   },
+      { id:'ava',    name:'Ava Williams',    age:13, dest:'Mission High School', endKey:'mission-hs', startKey:'home-noe',    time:'7:40 AM', verified:true,  bgcheck:true,  rating:5.0, trips:18,  seed:'Ava'    },
+      { id:'marcus', name:'Marcus Johnson',  age:15, dest:'Mission High School', endKey:'mission-hs', startKey:'home-castro', time:'7:50 AM', verified:true,  bgcheck:true,  rating:4.6, trips:12,  seed:'Marcus' },
+      { id:'jordan', name:'Jordan Rivera',   age:28, dest:'Salesforce Tower',    endKey:'salesforce', startKey:'home-castro', time:'8:00 AM', verified:true,  bgcheck:true,  rating:4.8, trips:87,  seed:'Jordan' },
+      { id:'tariq',  name:'Tariq Hassan',    age:30, dest:'Salesforce Tower',    endKey:'salesforce', startKey:'home-castro', time:'8:10 AM', verified:true,  bgcheck:true,  rating:4.8, trips:102, seed:'Tariq'  },
+      { id:'priya',  name:'Priya Kumar',     age:32, dest:'UCSF Mission Bay',    endKey:'ucsf',       startKey:'home-noe',    time:'8:15 AM', verified:true,  bgcheck:true,  rating:4.7, trips:156, seed:'Priya'  },
+      { id:'elena',  name:'Elena Vasquez',   age:26, dest:'Ferry Building',      endKey:'ferry',      startKey:'home-marina', time:'8:30 AM', verified:true,  bgcheck:true,  rating:4.9, trips:64,  seed:'Elena'  },
+      { id:'sam',    name:'Sam Patel',       age:16, dest:'Lowell High School',  endKey:'lowell-hs',  startKey:'home-sunset', time:'7:30 AM', verified:true,  bgcheck:true,  rating:5.0, trips:41,  seed:'Sam'    },
+      { id:'lin',    name:'Lin Wang',        age:17, dest:'Lowell High School',  endKey:'lowell-hs',  startKey:'home-sunset', time:'7:35 AM', verified:true,  bgcheck:true,  rating:4.9, trips:33,  seed:'Lin'    },
+      { id:'chris',  name:"Chris O'Connor",  age:24, dest:'SF State University', endKey:'sfsu',       startKey:'home-sunset', time:'8:00 AM', verified:true,  bgcheck:true,  rating:4.5, trips:51,  seed:'Chris'  },
+      /* Unverified rider — included so the safety filter is visible in the demo */
+      { id:'storm',  name:'Alex Storm',      age:22, dest:'Salesforce Tower',    endKey:'salesforce', startKey:'home-castro', time:'8:00 AM', verified:false, bgcheck:false, rating:null, trips:0,   seed:'Storm'  },
+    ];
+
+    /* ---------- Global leaderboard (top carpoolers worldwide) ---------- */
+    const LEADERBOARD_USERS = [
+      { name:'EcoQueen_NYC',    city:'New York',     country:'🇺🇸', co2: 285420, trips: 412, seed:'EcoQueenNYC'   },
+      { name:'CarbonNinja',     city:'London',       country:'🇬🇧', co2: 248910, trips: 376, seed:'CarbonNinja'   },
+      { name:'GreenMike',       city:'Toronto',      country:'🇨🇦', co2: 218450, trips: 312, seed:'GreenMikeTO'   },
+      { name:'RideHero_LA',     city:'Los Angeles',  country:'🇺🇸', co2: 196830, trips: 295, seed:'RideHeroLA'    },
+      { name:'ZeroEmissionFan', city:'Berlin',       country:'🇩🇪', co2: 175200, trips: 268, seed:'ZeroEmFan'     },
+      { name:'SydneySaver',     city:'Sydney',       country:'🇦🇺', co2: 154890, trips: 241, seed:'SydneySaver'   },
+      { name:'KyotoCarpool',    city:'Kyoto',        country:'🇯🇵', co2: 134560, trips: 215, seed:'KyotoCarpool'  },
+      { name:'ParisPedaler',    city:'Paris',        country:'🇫🇷', co2: 118720, trips: 189, seed:'ParisPedaler'  },
+      { name:'MumbaiMover',     city:'Mumbai',       country:'🇮🇳', co2:  98450, trips: 172, seed:'MumbaiMover'   },
+      { name:'SaoPauloSP',      city:'São Paulo',    country:'🇧🇷', co2:  87320, trips: 154, seed:'SaoPauloSP'    },
+      { name:'AmsterdamAnna',   city:'Amsterdam',    country:'🇳🇱', co2:  76210, trips: 132, seed:'AmsterdamA'    },
+      { name:'StockholmSteve',  city:'Stockholm',    country:'🇸🇪', co2:  65180, trips: 118, seed:'StockholmS'    },
+      { name:'CapeTownCarl',    city:'Cape Town',    country:'🇿🇦', co2:  54920, trips:  97, seed:'CapeTownC'     },
+      { name:'MexicoMia',       city:'Mexico City',  country:'🇲🇽', co2:  43750, trips:  82, seed:'MexicoMia'     },
+      { name:'TorontoTina',     city:'Toronto',      country:'🇨🇦', co2:  32480, trips:  64, seed:'TorontoTina'   },
+    ];
+
+    const EPA_CO2_PER_MILE = 404;   // grams of CO2 per mile (EPA: average passenger car)
+    const MATCH_DISTANCE_MI = 1.0;  // a rider is a "match" if their start AND end are within this many miles of yours
+
+    /* ---------- State ---------- */
+    const state = {
+      user: null,
+      startKey: null,
+      endKey: null,
+      currentMatch: null,
+      totalCO2: 0,
+      totalTrips: 0,
+      totalMiles: 0,
+      _pendingMiles: 0,
+      _pendingSaved: 0,
+      favorites: new Set(),
+      blocked: new Set(),
+      actionRiderId: null,
+    };
+
+    let mapPreview = null;
+    let confirmMap = null;
+    let gpsMap = null;
+    let mapLayers = [];
+    let confirmLayers = [];
+    let gpsLayers = [];
+
+    /* ---------- Helpers ---------- */
+    function haversineMiles(a, b) {
+      const R = 3958.8;
+      const toRad = d => d * Math.PI / 180;
+      const dLat = toRad(b.lat - a.lat);
+      const dLng = toRad(b.lng - a.lng);
+      const lat1 = toRad(a.lat), lat2 = toRad(b.lat);
+      const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
+      return 2 * R * Math.asin(Math.sqrt(h));
+    }
+    function avatarUrl(seed) {
+      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf,c1f4d2`;
+    }
+    function stars(rating) {
+      if (rating === null || rating === undefined) return '—';
+      const full = Math.round(rating);
+      return '★'.repeat(full) + '☆'.repeat(5 - full);
+    }
+    function showToast(msg, ms = 3500) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => t.classList.remove('show'), ms);
+    }
+    function goTo(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+      document.querySelectorAll('.drawer-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.target === screenId);
+      });
+      setTimeout(() => {
+        if (screenId === 'screen-map' && mapPreview) mapPreview.invalidateSize();
+        if (screenId === 'screen-confirm' && confirmMap) confirmMap.invalidateSize();
+        if (screenId === 'screen-gps' && gpsMap) gpsMap.invalidateSize();
+      }, 60);
+    }
+    function pinIcon(emoji, color) {
+      return L.divIcon({
+        className: '',
+        html: `<div style="background:${color}; width:30px; height:30px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.30); border:3px solid white;"><span style="transform:rotate(45deg); font-size:14px;">${emoji}</span></div>`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+      });
+    }
+    function clearLayers(layers, map) {
+      layers.forEach(l => map.removeLayer(l));
+      return [];
+    }
+
+    /* ---------- Drawer / nav ---------- */
+    function openDrawer() {
+      document.getElementById('drawer').classList.add('open');
+      document.getElementById('drawer-backdrop').classList.add('open');
+    }
+    function closeDrawer() {
+      document.getElementById('drawer').classList.remove('open');
+      document.getElementById('drawer-backdrop').classList.remove('open');
+    }
+    function navTo(screenId) {
+      closeDrawer();
+      if (screenId === 'screen-leaderboard') renderLeaderboard();
+      else if (screenId === 'screen-favorites') renderFavorites();
+      else if (screenId === 'screen-settings') initSettings();
+      else if (screenId === 'screen-profile') renderProfile();
+      goTo(screenId);
+    }
+
+    /* ---------- Sign-up ---------- */
+    function goToMap() {
+      const name = (document.getElementById('signup-name').value || 'You').trim();
+      const age = parseInt(document.getElementById('signup-age').value, 10) || 13;
+      const purpose = document.getElementById('signup-purpose').value;
+      const contact = (document.getElementById('signup-contact').value || 'Mom').trim();
+      state.user = { name, age, purpose, contact, seed: name.replace(/\s+/g, '') || 'You' };
+
+      // Drawer header with user info
+      document.getElementById('drawer-user-name').textContent = name;
+      document.getElementById('drawer-user-meta').textContent = (purpose === 'school' ? 'Student' : 'Commuter') + ' · San Francisco';
+
+      buildSpotDropdowns();
+      if (!mapPreview) initMapPreview();
+      goTo('screen-map');
+    }
+    function buildSpotDropdowns() {
+      const startSel = document.getElementById('map-start');
+      const endSel = document.getElementById('map-end');
+      startSel.innerHTML = '<option value="">Pick a starting point...</option>';
+      endSel.innerHTML = '<option value="">Pick a destination...</option>';
+      Object.entries(SPOTS).forEach(([key, spot]) => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = spot.name;
+        if (spot.type === 'start') startSel.appendChild(opt);
+        else endSel.appendChild(opt);
+      });
+    }
+
+    /* ---------- Map preview ---------- */
+    function initMapPreview() {
+      mapPreview = L.map('map', { zoomControl: false, attributionControl: false }).setView([37.7749, -122.4194], 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(mapPreview);
+    }
+    function updateMapPreview() {
+      state.startKey = document.getElementById('map-start').value || null;
+      state.endKey = document.getElementById('map-end').value || null;
+      document.getElementById('find-matches-btn').disabled = !(state.startKey && state.endKey);
+
+      if (!mapPreview) return;
+      mapLayers = clearLayers(mapLayers, mapPreview);
+      const distEl = document.getElementById('map-distance');
+
+      const a = state.startKey ? SPOTS[state.startKey] : null;
+      const b = state.endKey ? SPOTS[state.endKey] : null;
+
+      if (a && b) {
+        const m1 = L.marker([a.lat, a.lng], { icon: pinIcon('🏠', '#2D9D6E') }).addTo(mapPreview);
+        const m2 = L.marker([b.lat, b.lng], { icon: pinIcon('🎯', '#FFC857') }).addTo(mapPreview);
+        const line = L.polyline([[a.lat, a.lng], [b.lat, b.lng]], { color: '#2D9D6E', weight: 4, dashArray: '8,8' }).addTo(mapPreview);
+        mapLayers = [m1, m2, line];
+        mapPreview.fitBounds(line.getBounds(), { padding: [40, 40] });
+        const miles = haversineMiles(a, b);
+        distEl.textContent = `Trip distance: ${miles.toFixed(1)} mi · ~${Math.round(miles * EPA_CO2_PER_MILE)} g CO₂ if you drive alone`;
+      } else if (a) {
+        const m = L.marker([a.lat, a.lng], { icon: pinIcon('🏠', '#2D9D6E') }).addTo(mapPreview);
+        mapLayers = [m]; mapPreview.setView([a.lat, a.lng], 13); distEl.textContent = '';
+      } else if (b) {
+        const m = L.marker([b.lat, b.lng], { icon: pinIcon('🎯', '#FFC857') }).addTo(mapPreview);
+        mapLayers = [m]; mapPreview.setView([b.lat, b.lng], 13); distEl.textContent = '';
+      } else {
+        distEl.textContent = '';
+      }
+    }
+
+    /* ---------- Matching ---------- */
+    function findMatches() {
+      const a = SPOTS[state.startKey], b = SPOTS[state.endKey];
+      const scored = RIDERS
+        .filter(r => !state.blocked.has(r.id))
+        .map(r => {
+          const rStart = SPOTS[r.startKey], rEnd = SPOTS[r.endKey];
+          const startDist = haversineMiles(a, rStart);
+          const endDist = haversineMiles(b, rEnd);
+          return { ...r, startDist, endDist, total: startDist + endDist };
+        })
+        .filter(r => r.startDist < MATCH_DISTANCE_MI && r.endDist < MATCH_DISTANCE_MI)
+        .sort((x, y) => {
+          /* Favorites first */
+          const xf = state.favorites.has(x.id) ? 0 : 1;
+          const yf = state.favorites.has(y.id) ? 0 : 1;
+          if (xf !== yf) return xf - yf;
+          return x.total - y.total;
+        });
+      renderMatches(scored);
+      goTo('screen-matches');
+    }
+    function renderMatches(matches) {
+      const summary = document.getElementById('matches-summary');
+      const verified = matches.filter(m => m.verified).length;
+      const unverified = matches.length - verified;
+      if (matches.length === 0) {
+        summary.innerHTML = `No matches right now for that route. Try a different pair!`;
+      } else {
+        summary.innerHTML = `Found <strong>${matches.length} rider${matches.length === 1 ? '' : 's'}</strong> going your way · <strong>${verified}</strong> verified${unverified ? ` · <strong>${unverified}</strong> unverified <em>(we recommend skipping)</em>` : ''}.`;
+      }
+      const list = document.getElementById('matches-list');
+      list.innerHTML = '';
+      matches.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'rider-card' + (r.verified ? '' : ' unverified');
+        card.onclick = () => confirmMatch(r);
+
+        const isFav = state.favorites.has(r.id);
+        const favBadge = isFav ? `<span class="badge badge-fav">★ Favorite</span>` : '';
+        const badges = r.verified
+          ? `${favBadge}<span class="badge badge-verified">✓ ID</span>
+             <span class="badge badge-bg-check">🛡 Check</span>
+             <span class="badge badge-stars">${stars(r.rating)} ${r.rating}</span>`
+          : `<span class="badge badge-unverified">⚠ Unverified</span>`;
+
+        card.innerHTML = `
+          <div class="rider-avatar"><img src="${avatarUrl(r.seed)}" alt="${r.name}"/></div>
+          <div class="rider-info">
+            <div class="rider-name">${r.name}, ${r.age} ${badges}</div>
+            <div class="rider-meta">→ ${r.dest} · leaves ${r.time} · ${r.trips} trips</div>
+            <div class="rider-route">${(r.startDist + r.endDist).toFixed(2)} mi off your route</div>
+          </div>
+          <div class="rider-actions">
+            <button class="icon-btn fav ${isFav ? 'active' : ''}" data-fav-id="${r.id}" title="Favorite" onclick="toggleFavorite('${r.id}', event)">${isFav ? '★' : '☆'}</button>
+            <button class="icon-btn" title="More" onclick="openRiderActions('${r.id}', event)">⋮</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    /* ---------- Favorites ---------- */
+    function toggleFavorite(riderId, e) {
+      if (e) e.stopPropagation();
+      const wasFav = state.favorites.has(riderId);
+      if (wasFav) state.favorites.delete(riderId);
+      else state.favorites.add(riderId);
+      const r = RIDERS.find(x => x.id === riderId);
+      showToast(wasFav ? `Removed ${r ? r.name : 'rider'} from favorites.` : `⭐ Added ${r ? r.name : 'rider'} to favorites!`);
+      // If we're on matches screen, re-render to reflect (favorites move to top, badge updates)
+      if (document.getElementById('screen-matches').classList.contains('active') && state.startKey && state.endKey) {
+        findMatches();
+      }
+      if (document.getElementById('screen-favorites').classList.contains('active')) {
+        renderFavorites();
+      }
+    }
+    function renderFavorites() {
+      const list = document.getElementById('favorites-list');
+      if (state.favorites.size === 0) {
+        list.innerHTML = `
+          <div style="text-align: center; padding: 30px 20px; color: var(--muted);">
+            <div style="font-size: 48px; margin-bottom: 12px;">⭐</div>
+            <div style="font-weight: 700; font-size: 16px; margin-bottom: 4px; color: var(--text);">No favorites yet</div>
+            <div style="font-size: 13px;">Tap the star on any rider to add them here.</div>
+          </div>
+        `;
+        return;
+      }
+      const favs = RIDERS.filter(r => state.favorites.has(r.id));
+      list.innerHTML = '';
+      favs.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'rider-card';
+        card.innerHTML = `
+          <div class="rider-avatar"><img src="${avatarUrl(r.seed)}" alt="${r.name}"/></div>
+          <div class="rider-info">
+            <div class="rider-name">${r.name}, ${r.age} <span class="badge badge-fav">★ Favorite</span></div>
+            <div class="rider-meta">→ ${r.dest} · leaves ${r.time} · ${r.trips} trips</div>
+            <div class="rider-route">${stars(r.rating)} ${r.rating} · ${r.verified ? 'Verified' : 'Unverified'}</div>
+          </div>
+          <div class="rider-actions">
+            <button class="icon-btn fav active" title="Remove favorite" onclick="toggleFavorite('${r.id}', event)">★</button>
+            <button class="icon-btn" title="More" onclick="openRiderActions('${r.id}', event)">⋮</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    /* ---------- Block / report ---------- */
+    function openRiderActions(riderId, e) {
+      if (e) e.stopPropagation();
+      if (!riderId) { showToast('No rider selected.'); return; }
+      state.actionRiderId = riderId;
+      const r = RIDERS.find(x => x.id === riderId);
+      if (!r) return;
+      document.getElementById('rider-actions-title').innerHTML = `
+        <div class="rider-avatar"><img src="${avatarUrl(r.seed)}"/></div>
+        <span>${r.name}</span>
+      `;
+      document.getElementById('rider-actions-overlay').classList.add('open');
+    }
+    function closeRiderActions() {
+      document.getElementById('rider-actions-overlay').classList.remove('open');
+      state.actionRiderId = null;
+    }
+    function blockCurrentRider() {
+      if (state.actionRiderId) {
+        state.blocked.add(state.actionRiderId);
+        const r = RIDERS.find(x => x.id === state.actionRiderId);
+        state.favorites.delete(state.actionRiderId);
+        showToast(`⛔ Blocked ${r ? r.name : 'rider'}. They won't appear in your matches.`);
+        if (document.getElementById('screen-matches').classList.contains('active') && state.startKey && state.endKey) {
+          findMatches();
+        }
+        if (document.getElementById('screen-favorites').classList.contains('active')) renderFavorites();
+        if (document.getElementById('screen-settings').classList.contains('active')) renderBlockedList();
+      }
+      closeRiderActions();
+    }
+    function reportCurrentRider() {
+      if (state.actionRiderId) {
+        const r = RIDERS.find(x => x.id === state.actionRiderId);
+        showToast(`🚩 Report submitted for ${r ? r.name : 'rider'}. Safety team will review within 24 hours.`);
+      }
+      closeRiderActions();
+    }
+    function unblockRider(id) {
+      state.blocked.delete(id);
+      const r = RIDERS.find(x => x.id === id);
+      showToast(`Unblocked ${r ? r.name : 'rider'}. They'll appear in matches again.`);
+      renderBlockedList();
+    }
+
+    /* ---------- Confirm match ---------- */
+    function confirmMatch(rider) {
+      if (!rider.verified) {
+        showToast("⚠️ This rider isn't verified. For your safety, pick a verified rider.", 4000);
+        return;
+      }
+      state.currentMatch = rider;
+
+      document.getElementById('confirm-photos').innerHTML = `
+        <div class="match-photo"><img src="${avatarUrl(state.user.seed)}" alt="${state.user.name}"/></div>
+        <div class="match-photo"><img src="${avatarUrl(rider.seed)}" alt="${rider.name}"/></div>
+      `;
+      document.getElementById('confirm-names').textContent = `You + ${rider.name}`;
+      const startName = SPOTS[state.startKey].name.replace('Home: ', '');
+      document.getElementById('confirm-route').textContent = `${startName} → ${rider.dest} · ${rider.time}`;
+
+      if (!confirmMap) {
+        confirmMap = L.map('confirm-map', { zoomControl: false, attributionControl: false }).setView([37.7749, -122.4194], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(confirmMap);
+      }
+      confirmLayers = clearLayers(confirmLayers, confirmMap);
+      const a = SPOTS[state.startKey], b = SPOTS[state.endKey];
+      const m1 = L.marker([a.lat, a.lng], { icon: pinIcon('🏠', '#2D9D6E') }).addTo(confirmMap);
+      const m2 = L.marker([b.lat, b.lng], { icon: pinIcon('🎯', '#FFC857') }).addTo(confirmMap);
+      const line = L.polyline([[a.lat, a.lng], [b.lat, b.lng]], { color: '#2D9D6E', weight: 5 }).addTo(confirmMap);
+      confirmLayers = [m1, m2, line];
+      confirmMap.fitBounds(line.getBounds(), { padding: [30, 30] });
+
+      const miles = haversineMiles(a, b);
+      const soloGrams = Math.round(miles * EPA_CO2_PER_MILE);
+      const savedGrams = Math.round(soloGrams / 2);
+
+      animateCounter('co2-saved', 0, savedGrams, 1200);
+      document.getElementById('solo-co2').textContent = soloGrams.toLocaleString();
+      document.getElementById('trip-miles').textContent = miles.toFixed(1);
+
+      state._pendingMiles = miles;
+      state._pendingSaved = savedGrams;
+      goTo('screen-confirm');
+    }
+    function animateCounter(id, from, to, ms) {
+      const el = document.getElementById(id);
+      const start = performance.now();
+      function tick(now) {
+        const t = Math.min(1, (now - start) / ms);
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = Math.round(from + (to - from) * eased).toLocaleString();
+        if (t < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    /* ---------- Trip actions ---------- */
+    function shareTrip() {
+      const r = state.currentMatch;
+      const contact = state.user.contact || 'your emergency contact';
+      showToast(`📲 Trip shared with ${contact}. They have your route, partner (${r ? r.name : ''}), and ETA.`, 4500);
+    }
+
+    /* GPS-verified trip completion */
+    function finishTripWithGps() {
+      goTo('screen-gps');
+      setTimeout(() => {
+        if (!gpsMap) {
+          gpsMap = L.map('gps-map', { zoomControl: false, attributionControl: false });
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(gpsMap);
+        }
+        gpsLayers = clearLayers(gpsLayers, gpsMap);
+        const a = SPOTS[state.startKey], b = SPOTS[state.endKey];
+        const startM = L.marker([a.lat, a.lng], { icon: pinIcon('🏠', '#2D9D6E') }).addTo(gpsMap);
+        const endM   = L.marker([b.lat, b.lng], { icon: pinIcon('🎯', '#FFC857') }).addTo(gpsMap);
+        const fullLine = L.polyline([[a.lat, a.lng], [b.lat, b.lng]], { color: '#E1ECE5', weight: 4 }).addTo(gpsMap);
+        const tracker = L.marker([a.lat, a.lng], { icon: pinIcon('🚗', '#1DA1F2') }).addTo(gpsMap);
+        const progressLine = L.polyline([[a.lat, a.lng]], { color: '#1DA1F2', weight: 5 }).addTo(gpsMap);
+        gpsLayers = [startM, endM, fullLine, tracker, progressLine];
+        gpsMap.invalidateSize();
+        gpsMap.fitBounds(fullLine.getBounds(), { padding: [30, 30] });
+
+        // Reset display
+        const statusEl = document.getElementById('gps-status');
+        statusEl.classList.remove('verified');
+        statusEl.textContent = 'Tracking your route...';
+        document.getElementById('gps-progress').textContent = '0%';
+        document.getElementById('gps-message').textContent = '';
+
+        const DURATION = 2800;
+        const startTime = performance.now();
+        function tick(now) {
+          const t = Math.min(1, (now - startTime) / DURATION);
+          const eased = 1 - Math.pow(1 - t, 2);
+          const lat = a.lat + (b.lat - a.lat) * eased;
+          const lng = a.lng + (b.lng - a.lng) * eased;
+          tracker.setLatLng([lat, lng]);
+          progressLine.setLatLngs([[a.lat, a.lng], [lat, lng]]);
+          document.getElementById('gps-progress').textContent = Math.round(eased * 100) + '%';
+          if (t < 1) {
+            requestAnimationFrame(tick);
+          } else {
+            statusEl.textContent = '✓ Trip verified by GPS';
+            statusEl.classList.add('verified');
+            document.getElementById('gps-message').textContent =
+              `${state._pendingSaved} g of CO₂ saved — added to your leaderboard score.`;
+            setTimeout(() => completeFinishedTrip(), 1800);
+          }
+        }
+        requestAnimationFrame(tick);
+      }, 100);
+    }
+
+    function completeFinishedTrip() {
+      state.totalCO2  += state._pendingSaved || 0;
+      state.totalTrips += 1;
+      state.totalMiles += state._pendingMiles || 0;
+      renderProfile();
+      goTo('screen-profile');
+    }
+
+    /* ---------- Profile / impact ---------- */
+    function renderProfile() {
+      if (!state.user) return;
+      document.getElementById('profile-name').textContent = state.user.name;
+      document.getElementById('profile-purpose').textContent = state.user.purpose === 'school' ? 'Student carpooler' : 'Commuter';
+      const avatar = document.getElementById('profile-avatar');
+      avatar.innerHTML = `<img src="${avatarUrl(state.user.seed)}" style="width:100%; height:100%; border-radius:50%; display:block;" />`;
+      avatar.style.padding = '0';
+      avatar.style.overflow = 'hidden';
+      document.getElementById('total-co2').textContent = state.totalCO2.toLocaleString();
+      document.getElementById('total-trips').textContent = state.totalTrips;
+      document.getElementById('total-miles').textContent = state.totalMiles.toFixed(1);
+
+      // CO2 equivalent (~21 kg / year per mature tree)
+      const treeFraction = state.totalCO2 / 21000;
+      let eq;
+      if (state.totalCO2 === 0)        eq = 'Take your first carpool to start saving!';
+      else if (treeFraction >= 1)      eq = `≈ ${treeFraction.toFixed(1)} trees absorbing CO₂ for a year`;
+      else if (state.totalCO2 >= 1000) eq = `≈ a tree absorbing CO₂ for ${Math.round(treeFraction * 365)} days`;
+      else                             eq = 'Every gram counts — keep going!';
+      document.getElementById('total-equivalent').textContent = eq;
+    }
+
+    /* ---------- Leaderboard ---------- */
+    function renderLeaderboard() {
+      const me = {
+        name: (state.user ? state.user.name : 'You') + ' (You)',
+        city: 'San Francisco',
+        country: '🇺🇸',
+        co2:  state.totalCO2,
+        trips: state.totalTrips,
+        seed: state.user ? state.user.seed : 'You',
+        isMe: true,
+      };
+      const all = [...LEADERBOARD_USERS, me].sort((a, b) => b.co2 - a.co2);
+      const top3 = all.slice(0, 3);
+      const rest = all.slice(3);
+      const myRank = all.findIndex(u => u.isMe) + 1;
+
+      // Top 3 podium
+      const podium = document.getElementById('lb-podium');
+      podium.innerHTML = top3.map((u, i) => {
+        const medal = ['🥇', '🥈', '🥉'][i];
+        return `
+          <div class="podium-card ${u.isMe ? 'me' : ''} podium-${i+1}">
+            <div class="podium-medal">${medal}</div>
+            <div class="podium-avatar"><img src="${avatarUrl(u.seed)}"/></div>
+            <div class="podium-name">${u.name}</div>
+            <div class="podium-meta">${u.country} ${u.city}</div>
+            <div class="podium-score">${(u.co2/1000).toFixed(1)} kg</div>
+          </div>
+        `;
+      }).join('');
+
+      // Rest of list
+      const list = document.getElementById('lb-list');
+      list.innerHTML = rest.map((u, i) => `
+        <div class="lb-row ${u.isMe ? 'me' : ''}">
+          <div class="lb-rank">#${i + 4}</div>
+          <div class="rider-avatar"><img src="${avatarUrl(u.seed)}"/></div>
+          <div class="lb-info">
+            <div class="lb-name">${u.name}</div>
+            <div class="lb-city">${u.country} ${u.city}</div>
+          </div>
+          <div class="lb-score">${(u.co2/1000).toFixed(1)} kg</div>
+        </div>
+      `).join('');
+
+      // Your rank banner
+      document.getElementById('lb-your-rank').innerHTML =
+        `🏆 Your rank: <strong>#${myRank}</strong> of ${all.length} · <strong>${state.totalCO2.toLocaleString()} g</strong> CO₂ saved`;
+    }
+
+    /* ---------- Settings ---------- */
+    function initSettings() {
+      if (!state.user) return;
+      document.getElementById('settings-name').value = state.user.name;
+      document.getElementById('settings-age').value = state.user.age;
+      document.getElementById('settings-contact').value = state.user.contact;
+      renderBlockedList();
+    }
+    function saveSettings() {
+      if (!state.user) return;
+      state.user.name = (document.getElementById('settings-name').value || 'You').trim();
+      state.user.age = parseInt(document.getElementById('settings-age').value, 10) || state.user.age;
+      state.user.contact = (document.getElementById('settings-contact').value || state.user.contact).trim();
+      state.user.seed = state.user.name.replace(/\s+/g, '') || 'You';
+      // Refresh drawer header
+      document.getElementById('drawer-user-name').textContent = state.user.name;
+      showToast('✓ Profile updated!');
+    }
+    function renderBlockedList() {
+      const list = document.getElementById('blocked-list');
+      if (state.blocked.size === 0) {
+        list.innerHTML = '<div style="font-size:13px; color: var(--muted); padding: 6px 12px;">No blocked riders.</div>';
+        return;
+      }
+      list.innerHTML = '';
+      state.blocked.forEach(id => {
+        const r = RIDERS.find(x => x.id === id);
+        if (!r) return;
+        const row = document.createElement('div');
+        row.className = 'blocked-row';
+        row.innerHTML = `
+          <div class="rider-avatar"><img src="${avatarUrl(r.seed)}"/></div>
+          <span style="flex: 1; font-weight: 600; font-size: 14px;">${r.name}</span>
+          <button class="btn-link" onclick="unblockRider('${id}')">Unblock</button>
+        `;
+        list.appendChild(row);
+      });
+    }
+    function resetStats() {
+      state.totalCO2 = 0;
+      state.totalTrips = 0;
+      state.totalMiles = 0;
+      showToast('✓ Stats reset. Ready for a fresh demo!');
+    }
+  </script>
+</body>
+</html>
